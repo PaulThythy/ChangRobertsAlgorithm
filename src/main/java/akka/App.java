@@ -12,6 +12,7 @@ public class App {
 
         ActorRef initiactor = actorSystem.actorOf(Actor.props(0));
         ActorRef lastActor = actorSystem.actorOf(Actor.props(NB_ACTORS-1, initiactor));
+        initiactor.tell("Message from actor 0", ActorRef.noSender());
 
         actorSystem.terminate();
     }

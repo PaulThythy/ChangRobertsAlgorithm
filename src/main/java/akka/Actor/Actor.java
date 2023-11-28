@@ -33,7 +33,11 @@ public class Actor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-            .match()
+            .match(String.class, message -> {
+                System.out.println(message);
+                String newMessage = "Message from actor "+this.id;
+                this.next.forward(newMessage, getContext());
+            })
             .build();
     }
 }
