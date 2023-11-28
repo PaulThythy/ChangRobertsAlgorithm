@@ -1,6 +1,5 @@
 package akka.Actor;
 
-import javax.swing.AbstractAction;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.AbstractActor;
