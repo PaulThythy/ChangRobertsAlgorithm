@@ -2,6 +2,7 @@ package akka.Actor;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.App;
 import akka.actor.AbstractActor;
 
 public class Actor extends AbstractActor {
@@ -9,24 +10,36 @@ public class Actor extends AbstractActor {
     private int id;
     private boolean participant = false;
     private boolean leader = false;
+    private boolean nextIsInitiactor = false;
 
-    private Actor(int _id){
+    private Actor(int _id) {
         this.id = _id;
-        this.next = getContext().actorOf(Actor.props(++_id));
+
+        int newId = App.genNewId();
+        this.next = getContext().actorOf(Actor.props(newId));
+        
+        App.LST_ID_ATTRIBUTED.add(newId);
+        App.LST_ACTORS.add(this.next);
     }
 
-    private Actor(int _id, ActorRef initiactor){
-        this.id = _id;
+    private Actor(ActorRef initiactor) {
         this.next = initiactor;
+
+        int newId = App.genNewId();
+        this.id = newId;
+        App.LST_ID_ATTRIBUTED.add(newId);
+
+        this.nextIsInitiactor = true;
     }
 
-    // actor creation
-    public static Props props(int _id){
+    // creation of the initiactor and others actors
+    public static Props props(int _id) {
         return Props.create(Actor.class, _id);
     }
 
-    public static Props props(int _id, ActorRef initiactor){
-        return Props.create(Actor.class, _id, initiactor);
+    // creation of the last actor
+    public static Props props(ActorRef initiactor) {
+        return Props.create(Actor.class, initiactor);
     }
 
     @Override
@@ -34,7 +47,12 @@ public class Actor extends AbstractActor {
         return receiveBuilder()
             .match(String.class, message -> {
                 System.out.println(message);
-                String newMessage = "Message from actor "+this.id;
+                String newMessage;
+                if(this.nextIsInitiactor){
+                    newMessage = "Message from actor "+this.id+"\n-----------------";
+                }else{
+                    newMessage = "Message from actor "+this.id;
+                }
                 this.next.forward(newMessage, getContext());
             })
             .build();
