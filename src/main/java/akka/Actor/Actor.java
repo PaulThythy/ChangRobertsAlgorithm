@@ -2,39 +2,38 @@ package akka.Actor;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import akka.App;
 import akka.actor.AbstractActor;
+import java.util.Random;
 
 public class Actor extends AbstractActor {
     private ActorRef next;
     private int id;
-    private boolean participant = false;
-    private boolean leader = false;
+    //private boolean participant = false;
+    //private boolean leader = false;
     private boolean nextIsInitiactor = false;
 
-    private Actor(int _id) {
+    private Actor(int _id, int nbActorsRemaining) {
         this.id = _id;
 
-        int newId = App.genNewId();
-        this.next = getContext().actorOf(Actor.props(newId));
-        
-        App.LST_ID_ATTRIBUTED.add(newId);
-        App.LST_ACTORS.add(this.next);
+        if(nbActorsRemaining > 1) {                        
+            Random rand = new Random();
+            int max = Integer.MAX_VALUE;
+            int id_next = rand.nextInt(max) + 1;
+            this.next = getContext().actorOf(Actor.props(id_next, --nbActorsRemaining));
+        }
     }
 
     private Actor(ActorRef initiactor) {
         this.next = initiactor;
-
-        int newId = App.genNewId();
-        this.id = newId;
-        App.LST_ID_ATTRIBUTED.add(newId);
-
+        Random rand = new Random();
+        int max = Integer.MAX_VALUE;
+        this.id = rand.nextInt(max) + 1; 
         this.nextIsInitiactor = true;
     }
 
     // creation of the initiactor and others actors
-    public static Props props(int _id) {
-        return Props.create(Actor.class, _id);
+    public static Props props(int _id, int nbActorsRemaining) {
+        return Props.create(Actor.class, _id, nbActorsRemaining);
     }
 
     // creation of the last actor
