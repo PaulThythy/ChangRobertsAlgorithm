@@ -10,36 +10,23 @@ public class Actor extends AbstractActor {
     private int id;
     //private boolean participant = false;
     //private boolean leader = false;
-    private boolean nextIsInitiactor = false;
 
-    private Actor(int _id, int nbActorsRemaining) {
-        this.id = _id;
+    private Actor(int nbActorsRemaining, ActorRef initiactor) {
+        System.out.println(initiactor);
+        Random rand = new Random();
+        int max = Integer.MAX_VALUE;
+        this.id = rand.nextInt(max);
 
-        if(nbActorsRemaining > 1) {                        
-            Random rand = new Random();
-            int max = Integer.MAX_VALUE;
-            int id_next = rand.nextInt(max) + 1;
-            this.next = getContext().actorOf(Actor.props(id_next, --nbActorsRemaining));
+        if(nbActorsRemaining > 1) {
+            this.next = getContext().actorOf(Actor.props(--nbActorsRemaining, initiactor)); 
+        }else{
+            this.next = initiactor;
         }
     }
 
-    private Actor(ActorRef initiactor) {
-        this.next = initiactor;
-        Random rand = new Random();
-        int max = Integer.MAX_VALUE;
-        this.id = rand.nextInt(max) + 1; 
-        this.nextIsInitiactor = true;
-    }
-
-    // creation of the initiactor and others actors
-    public static Props props(int _id, int nbActorsRemaining) {
-        return Props.create(Actor.class, _id, nbActorsRemaining);
-    }
-
-    // creation of the last actor
-    public static Props props(ActorRef initiactor) {
-        return Props.create(Actor.class, initiactor);
-    }
+    public static Props props(int nbActorsRemaining, ActorRef initiactor) {
+        return Props.create(Actor.class, nbActorsRemaining, initiactor);
+    }  
 
     @Override
     public Receive createReceive() {
@@ -47,12 +34,8 @@ public class Actor extends AbstractActor {
             .match(String.class, message -> {
                 System.out.println(message);
                 String newMessage;
-                if(this.nextIsInitiactor){
-                    newMessage = "Message from actor "+this.id+"\n-----------------";
-                }else{
-                    newMessage = "Message from actor "+this.id;
-                }
-                this.next.forward(newMessage, getContext());
+                newMessage = "Message from actor "+this.id;
+                this.next.tell(newMessage, getSelf());
             })
             .build();
     }
