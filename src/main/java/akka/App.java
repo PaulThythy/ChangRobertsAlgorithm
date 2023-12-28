@@ -6,20 +6,12 @@ import akka.Actor.Actor;
 public class App {
 
     public static int nb_actors = 10;
+    public static ActorRef initiactor;
 
     public static void main(String[] args) {
         ActorSystem actorSystem = ActorSystem.create("ChangRobertsAlgorithm");
 
-        //ActorRef[] actors = new ActorRef[nb_actors];
-
-        /*for(int i = 0; i < nb_actors; i++) {
-            actors[i] = actorSystem.actorOf(Actor.props(actors[(i+1)%nb_actors]));
-        }*/
-
-        //actors[0].tell("Lack of leader, initiation message", ActorRef.noSender());
-
-        ActorRef initiactor = actorSystem.actorOf(Actor.props(nb_actors));
-        ActorRef lastActor = actorSystem.actorOf(Actor.props(initiactor));
+        initiactor = actorSystem.actorOf(Actor.props(nb_actors));
 
         initiactor.tell("Lack of leader, initiation message", ActorRef.noSender());
 
