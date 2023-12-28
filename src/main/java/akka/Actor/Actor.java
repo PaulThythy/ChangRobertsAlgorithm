@@ -9,24 +9,26 @@ import java.util.Random;
 public class Actor extends AbstractActor {
     private ActorRef next;
     private int id;
+    private boolean isInitiactor;
     private boolean participant = false;
     private boolean leader = false;
 
-    private Actor(int nbActorsRemaining) {
+    private Actor(int nbActorsRemaining, boolean _isInitiactor) {
         Random rand = new Random();
         int max = Integer.MAX_VALUE;
         this.id = rand.nextInt(max);
+        this.isInitiactor = _isInitiactor;
 
         if(nbActorsRemaining > 1) {
-            this.next = getContext().actorOf(Actor.props(--nbActorsRemaining));
+            this.next = getContext().actorOf(Actor.props(--nbActorsRemaining, false));
         } 
         else{
             this.next = App.initiactor;
         }
     }
 
-    public static Props props(int nbActorsRemaining) {
-        return Props.create(Actor.class, nbActorsRemaining);
+    public static Props props(int nbActorsRemaining, boolean _isInitiactor) {
+        return Props.create(Actor.class, nbActorsRemaining, _isInitiactor);
     }  
 
     @Override
@@ -34,8 +36,15 @@ public class Actor extends AbstractActor {
         return receiveBuilder()
             .match(String.class, message -> {
                 System.out.println(message);
-                String newMessage;
-                newMessage = "Message from actor "+this.id;
+                String newMessage = "";
+
+                if(this.isInitiactor) {
+                    newMessage += "----------------------------\n";
+                    newMessage += "Message from actor "+this.id;
+                }else{
+                    newMessage += "Message from actor "+this.id;
+                }
+                
                 this.next.tell(newMessage, getSelf());
             })
             .build();

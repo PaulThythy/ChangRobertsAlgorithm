@@ -11,7 +11,7 @@ public class App {
     public static void main(String[] args) {
         ActorSystem actorSystem = ActorSystem.create("ChangRobertsAlgorithm");
 
-        initiactor = actorSystem.actorOf(Actor.props(nb_actors));
+        initiactor = actorSystem.actorOf(Actor.props(nb_actors, true));
 
         initiactor.tell("Lack of leader, initiation message", ActorRef.noSender());
 
