@@ -13,7 +13,7 @@ public class App {
 
         initiactor = actorSystem.actorOf(Actor.props(nb_actors, true));
 
-        initiactor.tell("Lack of leader, initiation message", ActorRef.noSender());
+        initiactor.tell("starting...", ActorRef.noSender());
 
         try {
             Thread.sleep(2000);
