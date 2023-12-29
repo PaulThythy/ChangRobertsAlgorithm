@@ -14,3 +14,8 @@ mvn compile
 ```sh
 mvn exec:java -Dexec.mainClass="akka.App"
 ```
+
+## Run the following command to build a .jar : 
+```sh
+mvn package
+```

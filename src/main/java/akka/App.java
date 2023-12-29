@@ -5,7 +5,7 @@ import akka.actor.ActorRef;
 import akka.Actor.Actor;
 public class App {
 
-    public static int nb_actors = 5;
+    public static int nb_actors = 25;
     public static ActorRef initiactor;
 
     public static void main(String[] args) {
