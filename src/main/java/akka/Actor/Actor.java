@@ -35,16 +35,18 @@ public class Actor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
             .match(String.class, message -> {
+                // print the reveived message
                 System.out.println(message);
-                String newMessage = "";
-
-                if(this.isInitiactor) {
-                    newMessage += "----------------------------\n";
-                    newMessage += "Message from actor "+this.id;
-                }else{
-                    newMessage += "Message from actor "+this.id;
-                }
                 
+                // create the message to be sent
+                String newMessage = "";
+                if(this.isInitiactor)
+                    newMessage += "----------------------------\n";
+                newMessage += "Message from actor "+this.id;
+                
+                // marks itself as a participant
+                this.participant = true;
+                // sends the message to the next node 
                 this.next.tell(newMessage, getSelf());
             })
             .build();
