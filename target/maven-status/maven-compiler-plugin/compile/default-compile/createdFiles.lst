@@ -1,2 +1,5 @@
-akka/Actor/Actor.class
-akka/App.class
+perso/test/Actors/ActorClass$Message.class
+perso/test/Actors/ActorClass.class
+perso/test/Actors/ActorClass$Test02.class
+perso/test/Actors/ActorClass$Test01.class
+perso/test/App.class
