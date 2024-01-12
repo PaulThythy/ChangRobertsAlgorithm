@@ -9,11 +9,13 @@ public class App
 {
     public static void main( String[] args )
     {
-        ActorSystem acSystem = ActorSystem.create();
-        ActorRef acRef = acSystem.actorOf(ActorClass.props());
+        int nbActor = 25; //Limité par puissance de la machine
 
-        acRef.tell(new ActorClass.Test02(42, "Ceci est un test2"), ActorRef.noSender());
+        ActorSystem acSystem = ActorSystem.create("MonSystem");
+        ActorRef last = ActorClass.initCircle(acSystem, nbActor);
+        last.tell(new ActorClass.signal(-1, null), ActorRef.noSender());
 
-        acSystem.terminate();
+        
+        //acSystem.terminate();
     }
 }
