@@ -7,17 +7,20 @@ import akka.actor.ActorSystem;
 
 public class ActorClass extends AbstractActor {
     public interface Message {}
-    final int MAX_ID=9999999;
+    final int MAX_ID=99999999;
     final int id;
     ActorRef refAp;
+    int idLeader;
 
     public ActorClass(){
         id=-1;
         refAp=null;
+        idLeader=0;
     }
     public ActorClass(ActorSystem as, int _nbActor){
-        id=(int)Math.floor(Math.random()*MAX_ID);
+        id=(int)Math.floor(Math.random()*MAX_ID+1);
         refAp=null;
+        idLeader=0;
         if(_nbActor>0){
             refAp= as.actorOf(ActorClass.props(as,_nbActor-1));
         }
@@ -32,15 +35,27 @@ public class ActorClass extends AbstractActor {
                 }else if(text.equals("connect")&&refAp!=sender()){ //Si a un suivant different de l'expéditeur alors l'appel
                     refAp.tell(text, sender());
                 }
+
+                if(text.equals("choix leader")){
+                    refAp.tell(new ActorClass.signal(id), getContext().getSender());
+                }
             })
             .match(signal.class, signal -> {
                 if(signal.code<0){ //Connection des bornes de l'anneau
-                    System.out.println(""+signal.code+"Mon suivant est "+refAp);
-                    refAp.tell(new ActorClass.signal(signal.code-1, null), ActorRef.noSender());
+                    idLeader=-1*signal.code;
+                    if(id+signal.code!=0){ //Si n'est pas le leader
+                        refAp.tell(signal, getContext().getSender());
+                    }
+                    System.out.println("Mon leader est "+idLeader);
                 }else if(signal.code>0){ //transmet id
-                    
+                    idLeader = (signal.code >= id && signal.code > idLeader) ? signal.code:idLeader;
+                    if(idLeader==id)
+                        refAp.tell(-1*idLeader, getContext().getSender());
+                    if(signal.code>id)
+                        refAp.tell(signal, getContext().getSender());
                 }else{ //Arrêt
-
+                    System.out.println(""+signal.code+"Mon suivant est "+refAp);
+                    refAp.tell(new ActorClass.signal(0), getContext().getSender());
                 }
             })
             .build();
@@ -62,6 +77,14 @@ public class ActorClass extends AbstractActor {
     }
 
     /**
+     * Lance processus election leader
+     */
+    public void choixLeader(){
+        idLeader=0;
+        refAp.tell(new ActorClass.signal(id), getContext().getSender());
+    }
+
+    /**
      * [X]
      * @return
      */
@@ -80,6 +103,11 @@ public class ActorClass extends AbstractActor {
         public signal(int _code, ActorSystem _as){
             code=_code;
             as=_as;
+        }
+
+        public signal(int _code){
+            code=_code;
+            as=null;
         }
     }
 

@@ -13,8 +13,8 @@ public class App
 
         ActorSystem acSystem = ActorSystem.create("MonSystem");
         ActorRef last = ActorClass.initCircle(acSystem, nbActor);
-        last.tell(new ActorClass.signal(-1, null), ActorRef.noSender()); //Envoi du message de bouclage
-        
+        last.tell("choix leader", ActorRef.noSender()); //Envoi de choix de leader
+        //last.tell(new ActorClass.signal(0), ActorRef.noSender()); //Envoi du message de bouclage
         //Thread.sleep(2000);
         //acSystem.terminate();
     }
