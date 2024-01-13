@@ -1,0 +1,8 @@
+Rapport
+Comparaison de performance (Sequentiel vs Final)
+Intérêt 
+TU + Echantillon
+
+Fonctionne en séquentiel. Car message est envoy aux acteurs qui decident de le faire passer ou non.
+
+Importation jar autre projet
