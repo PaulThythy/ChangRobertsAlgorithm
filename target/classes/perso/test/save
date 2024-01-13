@@ -55,9 +55,11 @@ Pour résumer le principe, il s'agit "simplement" d'élire l'acteur avec le plus
 %==================
 \section{Résultats et performances}
 \subsection{Comparaison sur nombre d'acteurs}
-\section{Avis et limites}
+\section{Pour finir}
+\subsection{Avantages /!/}
+\paragraph{/!/ Compléxité en linéaire $O(n)$}
 \subsection{Limites/!/}
-\paragraph{/!/ Compléxité en $O(n)$}
+\paragraph{/!/ Sensible aux coupures réseaux}
 \subsection{Conclusions /!/}
 \paragraph{/!/ Chang roberts bien mais autre algo intéressant qui peuvent couvrire les limites de celui si \\
 /!/Algorithme de Suzuki-Kasami : Cet algorithme est conçu pour fonctionner dans des environnements de réseaux distribués asynchrones. Il est utilisé pour l'élection de leader dans des systèmes où la communication entre les acteurs peut être retardée ou imprévisible.\\
