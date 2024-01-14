@@ -2,37 +2,51 @@ package akka;
 
 import akka.actor.ActorSystem;
 import akka.actor.ActorRef;
+
 import akka.Actor.ActorClass;
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 public class App {
 
-    public static int nb_actors = 25;
+    public static final int nb_actors = 50;
     public static ActorRef initiactor;
-    public static void main(String[] args) {
-        
-        while(nb_actors<=250000000){
-            LocalDateTime start;
-            LocalDateTime end;
-            ActorSystem actorSystem = ActorSystem.create("ChangRobertsAlgorithm");
 
-            initiactor = actorSystem.actorOf(ActorClass.props(nb_actors, true));
-            start=LocalDateTime.now();
-            initiactor.tell("starting...", ActorRef.noSender());
-            end=LocalDateTime.now();
+    public static void main(String[] args) throws InterruptedException {
+        //testVitesseRange(5000, 15000, 1000);
+        testVitesseNbActor(32000);
+    }
 
-            System.out.println("nb_actors ="+nb_actors+", Durée(nanos) = "+Duration.between(start,end).toNanos());
-            System.out.println("nb_actors ="+nb_actors+", Durée(millis) = "+(double)Duration.between(start,end).toMillis());
-            System.out.println("nb_actors ="+nb_actors+", Durée(seconds) = "+(double)Duration.between(start,end).toMillis()/1000);
-            try {
-                Thread.sleep(5000);
-            } catch(InterruptedException e) {
-                e.printStackTrace();
+    /**
+     * Test sur echelle de nb d'acteurs
+     * @param debut Première valeur d'acteur a tester
+     * @param fin Limite d'acteurs
+     * @param increment Incrementation
+     * @throws InterruptedException
+     */
+    public static void testVitesseRange(int debut, int fin, int increment) throws InterruptedException{
+        if(debut<fin){
+            int nb_actors_copy=debut;
+            while(nb_actors_copy<=fin){
+                testVitesseNbActor(nb_actors_copy);
+                nb_actors_copy+=increment;
             }
-
-            actorSystem.terminate();
-            nb_actors=nb_actors*10;
         }
+        
+    }
+    /**
+     * Dependant nb_actors en variable global
+     * Calcule le temps d'attente selon .0035*(nbActeursDansLeTest/nbActeurDeBase)+1 secondes
+     * @param _nb_actors Nombre d'acteurs dans le reseau a tester
+     * @throws InterruptedException
+     */
+    public static void testVitesseNbActor(int _nb_actors) throws InterruptedException{
+        System.out.println("Test de vitesse pour "+_nb_actors+" acteurs");
+        ActorSystem actorSystem = ActorSystem.create("ChangRobertsAlgorithm"+_nb_actors);
+        initiactor = actorSystem.actorOf(ActorClass.props(_nb_actors, true));
+        initiactor.tell("starting...", ActorRef.noSender());
+
+        int sleepTime = (int)Math.ceil(.0035*(_nb_actors/nb_actors)+1)*1000;
+        System.out.println("Sleep for "+sleepTime);
+        Thread.sleep(sleepTime);
+        actorSystem.terminate();
     }
 }
