@@ -12,7 +12,7 @@ public class App {
 
     public static void main(String[] args) throws InterruptedException {
         //testVitesseRange(5000, 15000, 1000);
-        testVitesseNbActor(32000);
+        testVitesseNbActor(20000);
     }
 
     /**
