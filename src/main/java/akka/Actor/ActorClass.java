@@ -65,13 +65,11 @@ public class ActorClass extends AbstractActor {
                         this.participant = true;
                         this.next.tell(message, getSelf());
                     }
-
                     else if(message.getMsgActorId() < this.id && !this.participant) { //Passage du message avec mon id
                         this.participant = true;
                         Message electionMsg = new Message(true, this.id,message.getStartDateTime());
                         this.next.tell(electionMsg, getSelf());
                     }
-
                     else if(message.getMsgActorId() == this.id) { //Je suis le leader
                         // become leader
                         this.participant = false;

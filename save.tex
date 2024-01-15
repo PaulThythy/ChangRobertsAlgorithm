@@ -1,0 +1,131 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[left=2cm, right=2cm, top=2cm, bottom=2cm]{geometry}
+
+
+\title{Rapport Systèmes Distribués:\\Sujet 15 : Algorithmes d’élection}
+\author{THIRION Paul,\\ MKAVAVO Eddin  }
+\date{January 2024}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+%====================
+\section{Introduction}
+\paragraph{Le but de ce rapport est de servir de compte rendu de l'implémentation de l'algorythme de Chang Roberts. Cette implémentation à été faite via Akka. Nous aborderont l'interêt de cet algorythme, ses avantages théoriques et obsvervés, ainsi que ses limites. \\L'algorithme de Chang-Robertsest un algorithme de sélection de leader dans un réseau distribué. Cet algorithme a été développé par Leslie Lamport, Robert Shostak et Marshall Pease dans les années 1980. Il est conçu pour résoudre le problème de l'élection d'un nœud comme leader unique parmi un ensemble de nœuds dans un réseau sans utiliser de communication globale ou de coordonnateur centralisé.}
+\paragraph{L'algorithme de Chang-Roberts est une amélioration par rapport à l'algorithme de LeLann, qui est un autre algorithme d'élection de leader. L'une des principales améliorations de l'algorithme de Chang-Roberts réside dans sa simplicité et son efficacité. Il utilise un mécanisme de vote basé sur une numérotation des nœuds et une communication entre pairs pour élire un leader de manière décentralisée. Contrairement à l'algorithme de LeLann, l'algorithme de Chang-Roberts ne nécessite pas de communication globale pour fonctionner, ce qui le rend plus adapté aux réseaux distribués massivement parallèles.}
+\paragraph{L'algorithme de Chang-Roberts est particulièrement pertinent dans les situations où il faut élire un leader dans un réseau distribué sans avoir besoin d'une autorité centrale. Il trouve des applications dans divers domaines, notamment la conception de systèmes distribués, les réseaux de capteurs, les réseaux pair-à-pair (P2P) et même dans des contextes de modélisation d'acteurs tels qu'avec Akka.}
+
+%===================
+\section{Le sujet}
+\subsection{Enjeux}
+\paragraph{Avec la multiplication des systèmes distribuées, des problématiques se font ressentir dans différents secteurs d'activitées. Prenoms comme exemple un système de P2P simple.}
+\paragraph{Un réseau pair-à-pair (P2P) est un réseau informatique décentralisé où chaque nœud du réseau agit à la fois en tant que client et en tant que serveur pour les autres nœuds. Ces réseaux sont conçus pour permettre le partage direct de ressources telles que des fichiers, des données, des services, etc., entre les pairs sans nécessiter de serveurs centraux. Par nature, ce genre de réseau ne possède pas de machine centrale dédiée. Cependant, il est nécessaire de pouvoir élire, même temporairement, un nœud qui sera responsable et hiérarchiquement supérieur. Cette élection doit se faire de manière décentralisée.}
+\paragraph{Supposons que nous avons un réseau P2P où chaque pair a la capacité de collecter des informations sur les ressources disponibles et de les partager avec d'autres pairs. Cependant, pour assurer une coordination efficace, nous avons besoin d'un pair responsable de surveiller l'état global du réseau, de gérer les connexions, de prendre des décisions, ou même de gérer la découverte de nouveaux pairs. Tout acteur n'a pas besoin de faire ces opérations, cela serait couteux à l'echelle du reseau.}
+
+\subsection{L'algorythme de Chang Roberts}
+\paragraph{Pour fonctionner, l'algorythme necessite quelques prérequis.}
+\begin{itemize}
+    \item Le reseau d'acteur doit être un reseau en anneau
+    \item Chaque acteur doit avoir un identifiant qui lui est unique dans le réseau
+\end{itemize}
+
+\paragraph{Le schéma en Figure\ref{fig:AnneauBasique} (voir annexe) représente l'état d'un réseau avant l'élection d'un leader. Chaque acteur connaît l'un de ses voisins et son identifiant unique.
+\\
+L'algorithme peut se décomposer en 3 phases distinctes :\\
+Une première phase serait une phase d'envoi (voir Figure\ref{fig:AnneauPhaseEnvoi} annexes). Pendant cette phase, les différents acteurs vont envoyer leur identifiant à l'unique voisin connu. Si rien n'interrompt le message contenant un identifiant, ce dernier fera un tour complet de l'anneau pour revenir à son expéditeur.
+\\
+Lorsqu'un acteur reçoit un message (voir Figure\ref{fig:AnneauPhaseReception} de l'annexe), il comparera son identifiant unique avec le code reçu via le message de son prédécesseur. Si son identifiant est plus grand, alors il enverra un message à son suivant, en remplaçant le code par son identifiant. Si son identifiant est plus petit, alors il fera suivre le message à son suivant en conservant le code initial.
+\\
+Si le code reçu est égal à l'identifiant de l'acteur, alors cela veut dire que ce dernier a récupéré le message qu'il a lui-même envoyé, et qu'il n'existe pas d'acteur avec un identifiant plus grand que le sien dans le réseau. Cet acteur est donc le nouveau leader et va envoyer un message pour l'annoncer aux autres acteurs (Figure\ref{fig:AnneauPhaseElection} de l'annexe). Ainsi, le leader est élu dans le réseau.
+\\
+Pour résumer le principe, il s'agit "simplement" d'élire l'acteur avec le plus grand identifiant du réseau comme leader. Ainsi seul un acteur se revendiquera leader si les identifiants sont bien unique.}
+%==================
+\section{Implémentation}
+\subsection{Mise en place}
+
+\subsection{Actor}
+
+\subsection{Compilation}
+
+\subsection{Bibliothèque}
+
+\subsection{Utilisation}
+%==================
+\section{Résultats et performances}
+
+\paragraph{Les tests ont été réalisés séparément du développement du projet. Leurs objectifs sont doubles : premièrement, vérifier que l'algorithme fonctionne conformément aux attentes en renvoyant un état de réseau conforme. Deuxièmement, mesurer les performances de l'algorithme en fonction du nombre d'acteurs.}
+\paragraph{Les tests en environnement distribué se sont avérés difficiles à mettre en place. La récupération de l'état d'un acteur, en particulier dans un réseau en anneau, s'est révélée complexe. Pour contourner ce problème et malgré tout obtenir le temps nécessaire à l'élection d'un leader, nous avons choisi d'afficher le temps directement par le leader lorsqu'il reçoit son propre message. Cette méthode présente l'avantage de minimiser les perturbations dans le code existant. Il a simplement été nécessaire d'ajouter un attribut à la classe Message pour enregistrer la date et l'heure du lancement de l'élection du leader, nommé "startDateTime". Cet attribut est initialisé juste avant l'envoi du message d'élection du leader et ne sera pas modifié jusqu'à la destruction du message. Une fois le message renvoyé à son expéditeur, ce dernier effectue une seconde mesure et compare l'écart avec la première.}
+\paragraph{Pour mesurer le temps nous utilisons la library LocalDateTime. Cette dernière est suffisament simple et nous offre diversses méthodes pour récupérer l'écart entre deux points dans le temps, et pour l'exprimer en secondes, millisecondes ou nanosecondes. Nous utiliserons surtout cette mesure dans le code.}
+
+\subsection{Comparaison sur nombre d'acteurs}
+\paragraph{Un bon système distribué doit être facilement extenssible. Ainsi nous avons décidé de tester la scalabilité du projet. Nous avons lancer plusieurs fois l'algorythme d'élection avec différentes tailles de réseau.}
+\paragraph{Le premier test à été réalisé avec des réseaux allant de 50 acteurs à 25 600. Sur ce test nous avons doublé le nombre d'acteurs à chaque itérations.\\
+Comme on peut le voir sur la Figure\ref{fig:tempsElectionX2} et l'annexe, le temps d'élection de leader augmente proportionnelement au nombre d'acteur. Cette augmentation est exponentiel. Il s'agit du resultat attendu. Dans le contexte d'un reseau en anneau, l'information doit forcement faire un tour complet et être relayé par chaque acteur pour atteindre sa destination. Chaque acteur supplémentaire est une étape supplémentaire dans l'execution de l'algorythme. Nous avons arrêter les tests à 25600 acteurs car les temps d'execution devenaient trop long, et que nous avions déjà obsservé ce que nous attendions. La plus haute mesure est 3.46 secondes pour élire un leader, dans une réseau de 32 000 acteurs.
+}
+\paragraph{Si nous faisons un zoom sur l'interval [6400, 24400], nous constatons une évolution très linéaire du temps d'élection (voir Figure\ref{fig:tempsElectionPlus2000}). Sur ce test, nous avons fais évoluer le nombre d'acteur d'un nombre fixe (+2000 acteurs par itération). Le temps d'execution suit strictement cette évolution.\\
+Sur ces données, nous voyons bien que la compléxité de l'algorythme de Chang Roberts est en $O(n)$.}
+\section{Conclusion}
+\subsection{Avantages /!/}
+\paragraph{/!/ Decentralisé, repond à un besoin}
+\paragraph{/!/ Efficace, election en 1 seul tour d'anneau }
+\paragraph{/!/ Economme, peu d'échange réseau}
+\subsection{Limites}
+\paragraph{Nous voyons trois majeurs problèmes à l'algorythme de Chang Roberts.}
+\paragraph{Tout d'abord, il est important de noter que cet algorithme est conçu pour être utilisé uniquement dans un réseau en anneau. Cette limitation géométrique restreint son applicabilité à des topologies spécifiques.\\
+Considérons un réseau distribué basé sur une topologie en maillage. Dans un tel réseau, les acteurs sont connectés les uns aux autres de manière bidirectionnelle, formant une structure de grille où chaque acteur a plusieurs voisins horizontaux et verticaux. Dans cette configuration, nous ne pouvons pas appliquer l'algorythme de Chang Roberts. Cette architecture est très répendu dans les réseaux de capteurs et les systèmes de surveillance.}
+\paragraph{La plus grosse limite de l'algorythme réside dans sa sensibilité aux problèmes réseaux dans ses différents noeuds. Si pour une raison ou une autre un acteur subit des perturbations, ou qu'un message est perdu, l'algorythme doit être relancé depuis le debut. Cette affirmation par du principe qu'auncune méthode de snapshot à été mise en place sur le réseau.}
+\paragraph{Enfin, son temps d'exécution augmente linéairement avec le nombre d'acteurs dans le réseau, ce qui signifie que plus le réseau est vaste, plus l'algorithme mettra du temps à élire un leader. Cette limitation peut être ignoré en fonction de la situation, mais elle rend l'algorythme peu envisageable dans certaines situation. D'autant plus s'il est necessaire d'élire un leader plusieurs fois. Cette limitation peu se superposer à la sensibilité aux coupures réseaux. Dans le sens ou une coupure réseau implique de relancer entièrement l'algorythme. Plus le temps d'execution est long, plus on s'expose à un problème réseau.}
+\subsection{Conclusions /!/}
+\paragraph{/!/ Chang roberts bien mais autre algo intéressant qui peuvent couvrire les limites de celui si \\
+/!/Algorithme de Suzuki-Kasami : Cet algorithme est conçu pour fonctionner dans des environnements de réseaux distribués asynchrones. Il est utilisé pour l'élection de leader dans des systèmes où la communication entre les acteurs peut être retardée ou imprévisible.\\
+/!/Algorithme de Maekawa : L'algorithme de Maekawa est adapté aux situations où plusieurs acteurs doivent être élus simultanément comme leaders, par exemple dans les systèmes de tolérance aux fautes. Il réduit la complexité de la communication en autorisant chaque acteur à voter pour plusieurs candidats.\\}
+
+
+\newpage
+\section{ANNEXES}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{noimage.png}
+    \caption{Reseau acteur basique}
+    \label{fig:AnneauBasique}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{noimage.png}
+    \caption{Reseau acteur initialisation leader phase envoi}
+    \label{fig:AnneauPhaseEnvoi}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{noimage.png}
+    \caption{Reseau acteur initialisation leader phase reception}
+    \label{fig:AnneauPhaseReception}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{noimage.png}
+    \caption{Reseau acteur initialisation leader phase election}
+    \label{fig:AnneauPhaseElection}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{ActeursTestX2.png}
+    \caption{Evolution du temps d'élection en fonction du nombre d'acteurs (x2)}
+    \label{fig:tempsElectionX2}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{ActeursTestPlus2000.png}
+    \caption{Evolution du temps d'élection en fonction du nombre d'acteurs (+2000)}
+    \label{fig:tempsElectionPlus2000}
+\end{figure}
+
+\end{document}
